@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import SearchPage from './pages/SearchPage';
 import AdDetailPage from './pages/AdDetailPage';
@@ -7,10 +9,9 @@ import ChatPage from './pages/ChatPage';
 import ProfilePage from './pages/ProfilePage';
 import MapPage from './pages/MapPage';
 import ArchitecturePage from './pages/ArchitecturePage';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+import AdminPanel from './pages/AdminPanel';
 
-export type Page = 'home' | 'search' | 'detail' | 'create' | 'chat' | 'profile' | 'map' | 'architecture';
+export type Page = 'home' | 'search' | 'detail' | 'create' | 'chat' | 'profile' | 'map' | 'architecture' | 'admin';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
@@ -21,6 +22,8 @@ function App() {
     if (adId) setSelectedAdId(adId);
     window.scrollTo(0, 0);
   };
+
+  const isAdmin = currentPage === 'admin';
 
   const renderPage = () => {
     switch (currentPage) {
@@ -40,18 +43,20 @@ function App() {
         return <MapPage navigate={navigate} />;
       case 'architecture':
         return <ArchitecturePage navigate={navigate} />;
+      case 'admin':
+        return <AdminPanel navigate={navigate} />;
       default:
         return <HomePage navigate={navigate} />;
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <Navbar currentPage={currentPage} navigate={navigate} />
-      <main className="flex-1">
+    <div className="min-h-screen bg-gray-50 font-vazir" dir="rtl">
+      {!isAdmin && <Navbar navigate={navigate} currentPage={currentPage} />}
+      <main className={!isAdmin ? 'pb-8' : ''}>
         {renderPage()}
       </main>
-      <Footer navigate={navigate} />
+      {!isAdmin && <Footer navigate={navigate} />}
     </div>
   );
 }
