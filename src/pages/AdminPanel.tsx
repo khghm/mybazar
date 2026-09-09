@@ -546,10 +546,18 @@ function CategoriesManager() {
 
   const rootCats = categories.filter(c => !c.parentId);
 
+  const [addSuccess, setAddSuccess] = useState(false);
+
   const handleAdd = () => {
-    if (!newName.trim()) return;
+    if (!newName.trim()) {
+      alert('لطفاً نام دسته‌بندی را وارد کنید');
+      return;
+    }
     addCategory(newName.trim(), newParent || null);
     setNewName('');
+    setNewParent('');
+    setAddSuccess(true);
+    setTimeout(() => setAddSuccess(false), 2000);
   };
 
   const handleEdit = (id: string, name: string) => {
@@ -576,15 +584,27 @@ function CategoriesManager() {
       <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
         <h3 className="font-bold text-gray-800 mb-3 text-sm">افزودن دسته‌بندی جدید</h3>
         <div className="flex gap-2">
-          <input value={newName} onChange={e => setNewName(e.target.value)} placeholder="نام دسته‌بندی" className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-emerald-500" />
+          <input 
+            value={newName} 
+            onChange={e => setNewName(e.target.value)} 
+            onKeyDown={e => e.key === 'Enter' && handleAdd()}
+            placeholder="نام دسته‌بندی" 
+            className="flex-1 px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none focus:border-emerald-500" 
+          />
           <select value={newParent} onChange={e => setNewParent(e.target.value)} className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-xs outline-none">
             <option value="">دسته اصلی</option>
             {rootCats.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
-          <button onClick={handleAdd} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700">
+          <button onClick={handleAdd} className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-medium hover:bg-emerald-700 whitespace-nowrap">
             افزودن
           </button>
         </div>
+        {addSuccess && (
+          <div className="mt-3 p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-700 flex items-center gap-2 animate-fadeIn">
+            <Icons.Check size={14} />
+            دسته‌بندی با موفقیت اضافه شد
+          </div>
+        )}
       </div>
 
       {/* List */}

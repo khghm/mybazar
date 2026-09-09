@@ -275,15 +275,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // ===== Category Operations =====
   const addCategory = (name: string, parentId: string | null) => {
     const newCat: Category = {
-      id: `c${Date.now()}`,
-      name,
-      parentId,
+      id: `c${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      name: name.trim(),
+      parentId: parentId || null,
       icon: 'Tag',
       adCount: 0,
       active: true,
     };
     setCategories(prev => [...prev, newCat]);
-    addNotification('دسته‌بندی جدید', `دسته‌بندی "${name}" اضافه شد`, 'success');
+    console.log('Category added:', newCat.name);
   };
 
   const updateCategory = (id: string, data: Partial<Category>) => {
