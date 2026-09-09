@@ -161,8 +161,12 @@ interface AppContextType {
 
   // Category operations
   addCategory: (name: string, parentId: string | null) => void;
+  updateCategory: (id: string, data: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
   toggleCategoryActive: (id: string) => void;
+
+  // Ad creation
+  createAd: (data: Partial<Ad>) => string;
 
   // Settings operations
   updateSettings: (data: Partial<SiteSettings>) => void;
@@ -282,6 +286,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
     addNotification('دسته‌بندی جدید', `دسته‌بندی "${name}" اضافه شد`, 'success');
   };
 
+  const updateCategory = (id: string, data: Partial<Category>) => {
+    setCategories(prev => prev.map(c => c.id === id ? { ...c, ...data } : c));
+    addNotification('دسته‌بندی ویرایش شد', `دسته‌بندی با شناسه ${id} ویرایش شد`, 'info');
+  };
+
   const deleteCategory = (id: string) => {
     setCategories(prev => prev.filter(c => c.id !== id));
     // Also remove children
@@ -290,6 +299,36 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const toggleCategoryActive = (id: string) => {
     setCategories(prev => prev.map(c => c.id === id ? { ...c, active: !c.active } : c));
+  };
+
+  // ===== Ad Creation =====
+  const createAd = (data: Partial<Ad>): string => {
+    const newAd: Ad = {
+      id: `ad_${Date.now()}`,
+      title: data.title || 'آگهی جدید',
+      price: data.price || 'توافقی',
+      location: data.location || 'تهران',
+      time: 'همین الان',
+      image: data.image || data.images?.[0] || 'https://image.qwenlm.ai/generated-images/db150bb3-6f63-403f-aaa3-1bca0fd24e28/_result.png',
+      images: data.images || [],
+      category: data.category || 'کالای دیجیتال',
+      subcategory: data.subcategory || 'سایر',
+      description: data.description || '',
+      attributes: data.attributes || {},
+      featured: false,
+      seller: data.seller || {
+        name: 'کاربر جدید',
+        avatar: 'https://image.qwenlm.ai/generated-images/9a529771-cf48-4bd4-b0f4-99ccdc794c0b/_result.png',
+        rating: 0,
+        verified: false,
+        joinDate: '۱۴۰۳',
+        ads: 1,
+      },
+      status: 'pending' as any, // آگهی‌های جدید در حالت pending هستند
+    };
+    setAds(prev => [newAd, ...prev]);
+    addNotification('آگهی جدید ثبت شد', `آگهی "${newAd.title}" در انتظار بررسی است`, 'warning');
+    return newAd.id;
   };
 
   // ===== Settings Operations =====
@@ -318,7 +357,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
       blockUser, unblockUser, updateUserLevel,
       reviewReport,
       addNotification, markNotificationRead, clearAllNotifications,
-      addCategory, deleteCategory, toggleCategoryActive,
+      addCategory, updateCategory, deleteCategory, toggleCategoryActive,
+      createAd,
       updateSettings,
       getStats,
     }}>

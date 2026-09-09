@@ -11,6 +11,7 @@ export interface Ad {
   description: string;
   attributes: Record<string, string>;
   featured: boolean;
+  status?: 'active' | 'pending' | 'rejected' | 'expired' | 'sold';
   seller: {
     name: string;
     avatar: string;

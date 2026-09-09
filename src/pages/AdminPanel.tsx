@@ -215,16 +215,34 @@ function Dashboard() {
 
 /* ==================== ADS MANAGER ==================== */
 function AdsManager() {
-  const { ads, deleteAd, updateAdStatus, toggleAdFeatured } = useApp();
+  const { ads, deleteAd, updateAdStatus, toggleAdFeatured, updateAd } = useApp();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [editingAd, setEditingAd] = useState<string | null>(null);
+  const [editData, setEditData] = useState({ title: '', price: '', location: '' });
 
   const filtered = ads.filter(ad => {
     if (search && !ad.title.includes(search) && !ad.seller.name.includes(search)) return false;
     if (filterStatus !== 'all' && (ad as any).status !== filterStatus) return false;
     return true;
   });
+
+  const handleEdit = (ad: any) => {
+    setEditingAd(ad.id);
+    setEditData({ title: ad.title, price: ad.price, location: ad.location });
+  };
+
+  const handleSaveEdit = () => {
+    if (editingAd) {
+      updateAd(editingAd, editData);
+      setEditingAd(null);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingAd(null);
+  };
 
   const statusLabels: Record<string, string> = { active: 'فعال', pending: 'در انتظار', rejected: 'رد شده', expired: 'منقضی', sold: 'فروخته شده' };
   const statusColors: Record<string, string> = { active: 'bg-emerald-50 text-emerald-700', pending: 'bg-amber-50 text-amber-700', rejected: 'bg-red-50 text-red-700', expired: 'bg-gray-100 text-gray-600', sold: 'bg-blue-50 text-blue-700' };
@@ -261,52 +279,91 @@ function AdsManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {filtered.map(ad => (
-                <tr key={ad.id} className="hover:bg-gray-50/50">
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <img src={ad.image} alt="" className="w-8 h-8 rounded object-cover" />
-                      <div>
-                        <p className="font-medium text-gray-800 truncate max-w-[200px]">{ad.title}</p>
-                        <p className="text-[10px] text-gray-400">{ad.location}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-3 py-2.5 text-gray-600">{ad.seller.name}</td>
-                  <td className="px-3 py-2.5">
-                    <select
-                      value={(ad as any).status || 'active'}
-                      onChange={e => updateAdStatus(ad.id, e.target.value as AdStatus)}
-                      className={`px-2 py-1 rounded-md text-[10px] font-medium border-0 outline-none cursor-pointer ${statusColors[(ad as any).status || 'active']}`}
-                    >
-                      <option value="active">فعال</option>
-                      <option value="pending">در انتظار</option>
-                      <option value="rejected">رد شده</option>
-                      <option value="expired">منقضی</option>
-                      <option value="sold">فروخته شده</option>
-                    </select>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <button onClick={() => toggleAdFeatured(ad.id)} className={`px-2 py-1 rounded text-[10px] font-medium ${ad.featured ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
-                      {ad.featured ? '⭐ ویژه' : 'عادی'}
-                    </button>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex gap-1">
-                      {confirmDelete === ad.id ? (
-                        <div className="flex gap-1">
-                          <button onClick={() => { deleteAd(ad.id); setConfirmDelete(null); }} className="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-medium">تأیید حذف</button>
-                          <button onClick={() => setConfirmDelete(null)} className="px-2 py-1 bg-gray-200 text-gray-600 rounded text-[10px]">انصراف</button>
+              {filtered.map(ad => {
+                const isEditing = editingAd === ad.id;
+                return (
+                  <tr key={ad.id} className={`hover:bg-gray-50/50 ${isEditing ? 'bg-blue-50' : ''}`}>
+                    <td className="px-3 py-2.5">
+                      {isEditing ? (
+                        <div className="space-y-1">
+                          <input
+                            value={editData.title}
+                            onChange={e => setEditData({ ...editData, title: e.target.value })}
+                            className="w-full px-2 py-1 bg-white border border-blue-500 rounded text-xs outline-none"
+                            placeholder="عنوان"
+                          />
+                          <input
+                            value={editData.location}
+                            onChange={e => setEditData({ ...editData, location: e.target.value })}
+                            className="w-full px-2 py-1 bg-white border border-blue-500 rounded text-xs outline-none"
+                            placeholder="موقعیت"
+                          />
                         </div>
                       ) : (
-                        <button onClick={() => setConfirmDelete(ad.id)} className="p-1.5 hover:bg-red-50 rounded text-gray-400 hover:text-red-600">
-                          <Icons.Trash size={13} />
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <img src={ad.image} alt="" className="w-8 h-8 rounded object-cover" />
+                          <div>
+                            <p className="font-medium text-gray-800 truncate max-w-[200px]">{ad.title}</p>
+                            <p className="text-[10px] text-gray-400">{ad.location}</p>
+                          </div>
+                        </div>
                       )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+                    <td className="px-3 py-2.5 text-gray-600">{ad.seller.name}</td>
+                    <td className="px-3 py-2.5">
+                      {isEditing ? (
+                        <input
+                          value={editData.price}
+                          onChange={e => setEditData({ ...editData, price: e.target.value })}
+                          className="w-full px-2 py-1 bg-white border border-blue-500 rounded text-xs outline-none"
+                          placeholder="قیمت"
+                        />
+                      ) : (
+                        <select
+                          value={(ad as any).status || 'active'}
+                          onChange={e => updateAdStatus(ad.id, e.target.value as AdStatus)}
+                          className={`px-2 py-1 rounded-md text-[10px] font-medium border-0 outline-none cursor-pointer ${statusColors[(ad as any).status || 'active']}`}
+                        >
+                          <option value="active">فعال</option>
+                          <option value="pending">در انتظار</option>
+                          <option value="rejected">رد شده</option>
+                          <option value="expired">منقضی</option>
+                          <option value="sold">فروخته شده</option>
+                        </select>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <button onClick={() => toggleAdFeatured(ad.id)} className={`px-2 py-1 rounded text-[10px] font-medium ${ad.featured ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-500'}`}>
+                        {ad.featured ? '⭐ ویژه' : 'عادی'}
+                      </button>
+                    </td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex gap-1">
+                        {isEditing ? (
+                          <>
+                            <button onClick={handleSaveEdit} className="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-medium">ذخیره</button>
+                            <button onClick={handleCancelEdit} className="px-2 py-1 bg-gray-200 text-gray-600 rounded text-[10px]">انصراف</button>
+                          </>
+                        ) : confirmDelete === ad.id ? (
+                          <>
+                            <button onClick={() => { deleteAd(ad.id); setConfirmDelete(null); }} className="px-2 py-1 bg-red-600 text-white rounded text-[10px] font-medium">تأیید حذف</button>
+                            <button onClick={() => setConfirmDelete(null)} className="px-2 py-1 bg-gray-200 text-gray-600 rounded text-[10px]">انصراف</button>
+                          </>
+                        ) : (
+                          <>
+                            <button onClick={() => handleEdit(ad)} className="p-1.5 hover:bg-blue-50 rounded text-gray-400 hover:text-blue-600">
+                              <Icons.Edit size={13} />
+                            </button>
+                            <button onClick={() => setConfirmDelete(ad.id)} className="p-1.5 hover:bg-red-50 rounded text-gray-400 hover:text-red-600">
+                              <Icons.Trash size={13} />
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -481,9 +538,11 @@ function ReportsManager() {
 
 /* ==================== CATEGORIES MANAGER ==================== */
 function CategoriesManager() {
-  const { categories, addCategory, deleteCategory, toggleCategoryActive } = useApp();
+  const { categories, addCategory, updateCategory, deleteCategory, toggleCategoryActive } = useApp();
   const [newName, setNewName] = useState('');
   const [newParent, setNewParent] = useState<string>('');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
 
   const rootCats = categories.filter(c => !c.parentId);
 
@@ -491,6 +550,24 @@ function CategoriesManager() {
     if (!newName.trim()) return;
     addCategory(newName.trim(), newParent || null);
     setNewName('');
+  };
+
+  const handleEdit = (id: string, name: string) => {
+    setEditingId(id);
+    setEditName(name);
+  };
+
+  const handleSaveEdit = () => {
+    if (editingId && editName.trim()) {
+      updateCategory(editingId, { name: editName.trim() });
+      setEditingId(null);
+      setEditName('');
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
   };
 
   return (
@@ -514,41 +591,83 @@ function CategoriesManager() {
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
         {rootCats.map(cat => {
           const children = categories.filter(c => c.parentId === cat.id);
+          const isEditing = editingId === cat.id;
           return (
             <div key={cat.id} className="border-b border-gray-100 last:border-0">
               <div className="flex items-center justify-between p-3 hover:bg-gray-50">
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-1">
                   <div className={`w-2 h-2 rounded-full ${cat.active ? 'bg-emerald-500' : 'bg-gray-300'}`}></div>
-                  <span className="text-sm font-medium text-gray-800">{cat.name}</span>
-                  <span className="text-[10px] text-gray-400">({cat.adCount.toLocaleString('fa-IR')} آگهی)</span>
+                  {isEditing ? (
+                    <div className="flex items-center gap-2 flex-1">
+                      <input
+                        value={editName}
+                        onChange={e => setEditName(e.target.value)}
+                        className="px-2 py-1 bg-white border border-emerald-500 rounded text-xs outline-none flex-1"
+                        autoFocus
+                      />
+                      <button onClick={handleSaveEdit} className="px-2 py-1 bg-emerald-600 text-white rounded text-[10px]">ذخیره</button>
+                      <button onClick={handleCancelEdit} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-[10px]">انصراف</button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-sm font-medium text-gray-800">{cat.name}</span>
+                      <span className="text-[10px] text-gray-400">({cat.adCount.toLocaleString('fa-IR')} آگهی)</span>
+                    </>
+                  )}
                 </div>
-                <div className="flex gap-1">
-                  <button onClick={() => toggleCategoryActive(cat.id)} className={`px-2 py-1 rounded text-[10px] font-medium ${cat.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
-                    {cat.active ? 'فعال' : 'غیرفعال'}
-                  </button>
-                  <button onClick={() => deleteCategory(cat.id)} className="p-1.5 hover:bg-red-50 rounded text-gray-400 hover:text-red-600">
-                    <Icons.Trash size={12} />
-                  </button>
-                </div>
+                {!isEditing && (
+                  <div className="flex gap-1">
+                    <button onClick={() => handleEdit(cat.id, cat.name)} className="p-1.5 hover:bg-blue-50 rounded text-gray-400 hover:text-blue-600">
+                      <Icons.Edit size={12} />
+                    </button>
+                    <button onClick={() => toggleCategoryActive(cat.id)} className={`px-2 py-1 rounded text-[10px] font-medium ${cat.active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500'}`}>
+                      {cat.active ? 'فعال' : 'غیرفعال'}
+                    </button>
+                    <button onClick={() => deleteCategory(cat.id)} className="p-1.5 hover:bg-red-50 rounded text-gray-400 hover:text-red-600">
+                      <Icons.Trash size={12} />
+                    </button>
+                  </div>
+                )}
               </div>
               {children.length > 0 && (
                 <div className="bg-gray-50/50 px-6 py-2 border-t border-gray-50">
-                  {children.map(child => (
-                    <div key={child.id} className="flex items-center justify-between py-1.5">
-                      <div className="flex items-center gap-2">
-                        <div className={`w-1.5 h-1.5 rounded-full ${child.active ? 'bg-emerald-400' : 'bg-gray-300'}`}></div>
-                        <span className="text-xs text-gray-600">{child.name}</span>
+                  {children.map(child => {
+                    const isChildEditing = editingId === child.id;
+                    return (
+                      <div key={child.id} className="flex items-center justify-between py-1.5">
+                        <div className="flex items-center gap-2 flex-1">
+                          <div className={`w-1.5 h-1.5 rounded-full ${child.active ? 'bg-emerald-400' : 'bg-gray-300'}`}></div>
+                          {isChildEditing ? (
+                            <div className="flex items-center gap-2 flex-1">
+                              <input
+                                value={editName}
+                                onChange={e => setEditName(e.target.value)}
+                                className="px-2 py-1 bg-white border border-emerald-500 rounded text-xs outline-none flex-1"
+                                autoFocus
+                              />
+                              <button onClick={handleSaveEdit} className="px-2 py-1 bg-emerald-600 text-white rounded text-[10px]">ذخیره</button>
+                              <button onClick={handleCancelEdit} className="px-2 py-1 bg-gray-200 text-gray-700 rounded text-[10px]">انصراف</button>
+                            </div>
+                          ) : (
+                            <span className="text-xs text-gray-600">{child.name}</span>
+                          )}
+                        </div>
+                        {!isChildEditing && (
+                          <div className="flex gap-1">
+                            <button onClick={() => handleEdit(child.id, child.name)} className="text-[10px] text-gray-400 hover:text-blue-600">
+                              <Icons.Edit size={10} />
+                            </button>
+                            <button onClick={() => toggleCategoryActive(child.id)} className="text-[10px] text-gray-500 hover:text-emerald-600">
+                              {child.active ? 'غیرفعال' : 'فعال'}
+                            </button>
+                            <button onClick={() => deleteCategory(child.id)} className="text-[10px] text-gray-400 hover:text-red-600">
+                              <Icons.Trash size={10} />
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <div className="flex gap-1">
-                        <button onClick={() => toggleCategoryActive(child.id)} className="text-[10px] text-gray-500 hover:text-emerald-600">
-                          {child.active ? 'غیرفعال' : 'فعال'}
-                        </button>
-                        <button onClick={() => deleteCategory(child.id)} className="text-[10px] text-gray-400 hover:text-red-600">
-                          <Icons.Trash size={10} />
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>
