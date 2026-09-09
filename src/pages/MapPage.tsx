@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Page } from '../App';
-import { mockAds } from '../data/mockData';
 import { Icons } from '../components/Icons';
+import { useApp } from '../context/AppContext';
 
 interface MapPageProps {
   navigate: (page: Page, adId?: string) => void;
@@ -9,17 +9,14 @@ interface MapPageProps {
 
 export default function MapPage({ navigate }: MapPageProps) {
   const [selectedMarker, setSelectedMarker] = useState<string | null>(null);
+  const { ads } = useApp();
 
-  const markers = [
-    { id: '1', x: 30, y: 40, ad: mockAds[0] },
-    { id: '2', x: 55, y: 25, ad: mockAds[1] },
-    { id: '3', x: 70, y: 55, ad: mockAds[2] },
-    { id: '4', x: 20, y: 65, ad: mockAds[3] },
-    { id: '5', x: 80, y: 35, ad: mockAds[4] },
-    { id: '6', x: 45, y: 70, ad: mockAds[5] },
-    { id: '7', x: 60, y: 80, ad: mockAds[6] },
-    { id: '8', x: 35, y: 20, ad: mockAds[7] },
-  ];
+  const markers = ads.slice(0, 8).map((ad, i) => ({
+    id: ad.id,
+    x: 20 + (i * 10) % 70,
+    y: 20 + (i * 15) % 60,
+    ad,
+  }));
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 animate-fadeIn">

@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { Page } from '../App';
-import { chatConversations } from '../data/mockData';
 import { Icons } from '../components/Icons';
+import { useApp } from '../context/AppContext';
 
 interface ChatPageProps {
   navigate: (page: Page) => void;
 }
 
 export default function ChatPage({ navigate }: ChatPageProps) {
-  const [selectedChat, setSelectedChat] = useState(chatConversations[0]);
+  const { chats } = useApp();
+  const [selectedChat, setSelectedChat] = useState(chats[0]);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([
     { id: 1, text: 'سلام، وقت بخیر. آگهی آیفون ۱۵ پرو مکس شما رو دیدم.', sender: 'other' as const, time: '۱۰:۲۵' },
@@ -44,7 +45,7 @@ export default function ChatPage({ navigate }: ChatPageProps) {
               </div>
             </div>
             <div className="flex-1 overflow-y-auto">
-              {chatConversations.map((conv) => (
+              {chats.map((conv) => (
                 <div
                   key={conv.id}
                   onClick={() => setSelectedChat(conv)}

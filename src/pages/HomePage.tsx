@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Page } from '../App';
-import { mockAds, categories } from '../data/mockData';
+import { categories } from '../data/mockData';
 import { Icons } from '../components/Icons';
+import { useApp } from '../context/AppContext';
 
 interface HomePageProps {
   navigate: (page: Page, adId?: string) => void;
@@ -10,9 +11,10 @@ interface HomePageProps {
 export default function HomePage({ navigate }: HomePageProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCity, setSelectedCity] = useState('تهران');
+  const { ads } = useApp();
 
-  const featuredAds = mockAds.filter(ad => ad.featured);
-  const latestAds = mockAds.slice(0, 6);
+  const featuredAds = ads.filter(ad => ad.featured);
+  const latestAds = ads.slice(0, 6);
 
   return (
     <div className="animate-fadeIn">

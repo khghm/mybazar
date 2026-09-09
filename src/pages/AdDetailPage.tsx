@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Page } from '../App';
-import { mockAds } from '../data/mockData';
 import { Icons } from '../components/Icons';
+import { useApp } from '../context/AppContext';
 
 interface AdDetailPageProps {
   navigate: (page: Page, adId?: string) => void;
@@ -12,8 +12,9 @@ export default function AdDetailPage({ navigate, adId }: AdDetailPageProps) {
   const [showPhone, setShowPhone] = useState(false);
   const [showReport, setShowReport] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { ads } = useApp();
 
-  const ad = mockAds.find(a => a.id === adId) || mockAds[0];
+  const ad = ads.find(a => a.id === adId) || ads[0];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 animate-fadeIn">

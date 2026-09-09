@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Page } from '../App';
-import { mockAds } from '../data/mockData';
 import { Icons } from '../components/Icons';
+import { useApp } from '../context/AppContext';
 
 interface SearchPageProps {
   navigate: (page: Page, adId?: string) => void;
@@ -11,6 +11,7 @@ export default function SearchPage({ navigate }: SearchPageProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
+  const { ads } = useApp();
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 animate-fadeIn">
@@ -113,7 +114,7 @@ export default function SearchPage({ navigate }: SearchPageProps) {
 
       {/* Results Grid */}
       <div className={`grid gap-4 ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'}`}>
-        {mockAds.map((ad) => (
+        {ads.map((ad) => (
           <div
             key={ad.id}
             onClick={() => navigate('detail', ad.id)}

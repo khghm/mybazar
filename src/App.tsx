@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { AppProvider } from './context/AppContext';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
@@ -13,7 +14,7 @@ import AdminPanel from './pages/AdminPanel';
 
 export type Page = 'home' | 'search' | 'detail' | 'create' | 'chat' | 'profile' | 'map' | 'architecture' | 'admin';
 
-function App() {
+function AppContent() {
   const [currentPage, setCurrentPage] = useState<Page>('home');
   const [selectedAdId, setSelectedAdId] = useState<string | null>(null);
 
@@ -58,6 +59,14 @@ function App() {
       </main>
       {!isAdmin && <Footer navigate={navigate} />}
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AppProvider>
+      <AppContent />
+    </AppProvider>
   );
 }
 
